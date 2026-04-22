@@ -71,7 +71,7 @@ type CameraPoint = {
 };
 
 const STORAGE_KEY = "interior_projects";
-const API_BASE = "http://localhost:3001";
+const API_BASE = "https://archiville-interior-project.vercel.app";
 
 const DB_NAME = "interior_ai_studio_db";
 const DB_VERSION = 1;
