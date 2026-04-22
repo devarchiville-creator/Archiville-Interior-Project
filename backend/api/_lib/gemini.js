@@ -5,7 +5,9 @@ const MODEL_NAME = process.env.GEMINI_MODEL || "gemini-2.5-flash-image";
 const ENABLE_FALLBACK = String(process.env.ENABLE_FALLBACK || "true") === "true";
 
 const ai = new GoogleGenAI({ apiKey: GEMINI_API_KEY });
-
+if (!GEMINI_API_KEY) {
+  throw new Error("GEMINI_API_KEY environment variable is not set");
+}
 function parseDataUrl(dataUrl) {
   const match = /^data:(.+);base64,(.+)$/.exec(dataUrl || "");
   if (!match) throw new Error("Invalid base64 data URL");
