@@ -97,7 +97,7 @@ const brushColors: Record<string, string> = {
   red: "#ff0000",
   blue: "#0037ff",
   green: "#00a81c",
-  yellow: "#ffea00",
+  yellow: "#e3d105",
 };
 
 const openImageDb = (): Promise<IDBDatabase> =>
