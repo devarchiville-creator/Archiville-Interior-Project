@@ -18,10 +18,20 @@ module.exports = async (req, res) => {
   }
 
   try {
-    const { imageBase64, cameraPoint } = req.body || {};
+    const body = req.body || {};
+    const { imageBase64, cameraPoint } = body;
+
+    console.log("generate-povs called");
+    console.log("has body:", !!req.body);
+    console.log("has imageBase64:", !!imageBase64);
+    console.log("cameraPoint:", cameraPoint);
 
     if (!imageBase64) {
       return send(res, 400, { error: "imageBase64 is required" });
+    }
+
+    if (typeof imageBase64 !== "string" || !imageBase64.startsWith("data:image")) {
+      return send(res, 400, { error: "Invalid imageBase64 format" });
     }
 
     let cameraInstruction = "";
@@ -70,10 +80,15 @@ Requirements:
         textPrompt,
       });
 
-      if (result.images.length > 0) {
+      console.log("gemini result received");
+      console.log("images returned:", result?.images?.length || 0);
+
+      if (result?.images?.length > 0) {
         generated.push(result.images[0]);
       }
     } catch (error) {
+      console.error("generate-povs gemini error:", error);
+
       if (ENABLE_FALLBACK && isQuotaError(error)) {
         return send(res, 200, {
           success: true,
@@ -82,7 +97,11 @@ Requirements:
           debug: { modelRequested: MODEL_NAME, fallback: true },
         });
       }
-      throw error;
+
+      return send(res, 500, {
+        error: error?.message || "Gemini generation failed",
+        modelRequested: MODEL_NAME,
+      });
     }
 
     if (!generated.length && ENABLE_FALLBACK) {
@@ -94,12 +113,21 @@ Requirements:
       });
     }
 
+    if (!generated.length) {
+      return send(res, 500, {
+        error: "No image returned from Gemini",
+        modelRequested: MODEL_NAME,
+      });
+    }
+
     return send(res, 200, {
       success: true,
       images: generated,
       debug: { modelRequested: MODEL_NAME, imageCount: generated.length },
     });
   } catch (error) {
+    console.error("generate-povs route error:", error);
+
     return send(res, 500, {
       error: error?.message || "Failed to generate POVs",
       modelRequested: MODEL_NAME,
